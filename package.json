@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Polymer/polymer-build.git"
+    "url": "git+https://github.com/srijken/polymer-build.git"
   },
   "author": "The Polymer Project Authors",
   "license": "BSD-3-Clause",
