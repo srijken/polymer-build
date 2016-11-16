@@ -15,14 +15,14 @@
 import * as dom5 from 'dom5';
 import * as parse5 from 'parse5';
 import * as path from 'path';
-import {posix as posixPath} from 'path';
-import {Transform} from 'stream';
+import { posix as posixPath } from 'path';
+import { Transform } from 'stream';
 import File = require('vinyl');
 import * as logging from 'plylog';
-import {ProjectConfig} from 'polymer-project-config';
+import { ProjectConfig } from 'polymer-project-config';
 
-import {urlFromPath} from './path-transformers';
-import {StreamAnalyzer} from './analyzer';
+import { urlFromPath } from './path-transformers';
+import { StreamAnalyzer } from './analyzer';
 
 
 // non-ES module
@@ -38,7 +38,7 @@ export class Bundler extends Transform {
   sharedFile: File;
 
   constructor(config: ProjectConfig, analyzer: StreamAnalyzer) {
-    super({objectMode: true});
+    super({ objectMode: true });
 
     this.config = config;
     this.analyzer = analyzer;
@@ -46,9 +46,9 @@ export class Bundler extends Transform {
   }
 
   _transform(
-      file: File,
-      _encoding: string,
-      callback: (error?: any, data?: File) => void): void {
+    file: File,
+    _encoding: string,
+    callback: (error?: any, data?: File) => void): void {
     // If this file is a fragment, hold on to the file so that it's fully
     // analyzed by the time down-stream transforms see it.
     if (this.config.isFragment(file.path)) {
@@ -81,10 +81,10 @@ export class Bundler extends Transform {
   async _buildBundles(): Promise<Map<string, string>> {
     const bundles = await this._getBundles();
     const sharedDepsBundle = (this.config.shell) ?
-        urlFromPath(this.config.root, this.config.shell) :
-        this.sharedBundleUrl;
+      urlFromPath(this.config.root, this.config.shell) :
+      this.sharedBundleUrl;
     const sharedDeps = bundles.get(sharedDepsBundle) || [];
-    const promises: Promise<{url: string, contents: string}>[] = [];
+    const promises: Promise<{ url: string, contents: string }>[] = [];
 
     if (this.config.shell) {
       const shellFile = this.analyzer.getFile(this.config.shell);
@@ -99,12 +99,12 @@ export class Bundler extends Transform {
         posixPath.relative(posixPath.dirname(fragmentUrl), sharedDepsBundle)
       ];
       const excludes = (this.config.isShell(fragment)) ?
-          [] :
-          sharedDeps.concat(sharedDepsBundle);
+        [] :
+        sharedDeps.concat(sharedDepsBundle);
 
       promises.push(new Promise((resolve, reject) => {
         const vulcanize = new Vulcanize({
-          abspath: null,
+          abspath: this.config.root,
           fsResolver: this.analyzer.loader,
           addedImports: addedImports,
           stripExcludes: excludes,
@@ -142,7 +142,7 @@ export class Bundler extends Transform {
     const shellUrl = urlFromPath(this.config.root, this.config.shell);
     const shellUrlDir = posixPath.dirname(shellUrl);
     const shellDeps =
-        bundles.get(shellUrl).map((d) => posixPath.relative(shellUrlDir, d));
+      bundles.get(shellUrl).map((d) => posixPath.relative(shellUrlDir, d));
     logger.debug('found shell dependencies', {
       shellUrl: shellUrl,
       shellUrlDir: shellUrlDir,
@@ -154,10 +154,10 @@ export class Bundler extends Transform {
     const contents = file.contents.toString();
     const doc = parse5.parse(contents);
     const imports = dom5.queryAll(
-        doc,
-        dom5.predicates.AND(
-            dom5.predicates.hasTagName('link'),
-            dom5.predicates.hasAttrValue('rel', 'import')));
+      doc,
+      dom5.predicates.AND(
+        dom5.predicates.hasTagName('link'),
+        dom5.predicates.hasAttrValue('rel', 'import')));
     logger.debug('found html import elements', {
       imports: imports.map((el) => dom5.getAttribute(el, 'href')),
     });
@@ -189,7 +189,7 @@ export class Bundler extends Transform {
   _generateSharedBundle(sharedDeps: string[]): Promise<any> {
     return new Promise((resolve, reject) => {
       const contents =
-          sharedDeps.map((d) => `<link rel="import" href="${d}">`).join('\n');
+        sharedDeps.map((d) => `<link rel="import" href="${d}">`).join('\n');
 
       const sharedFsPath = path.resolve(this.config.root, this.sharedBundleUrl);
       this.sharedFile = new File({
